@@ -1,0 +1,626 @@
+#
+name: "imagenet"
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { shape: { dim: 1 dim: 3 dim: 224 dim: 224 } }
+}
+
+
+# ---------------------------------------------
+# Conv_BN_AC: x224 -> x112 ("conv1")
+layer {
+  name: "conv1__conv"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  convolution_param {
+    num_output: 16
+    kernel_size: 3
+    stride: 2
+    pad: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv1__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "conv1__bn__scale"
+  type: "Scale"
+  bottom: "conv1"
+  top: "conv1"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv1__act__relu"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+
+# ---------------------------------------------
+# Conv_BN_AC: x112 -> x56 ("conv2")
+layer {
+  name: "conv2__conv"
+  type: "Convolution"
+  bottom: "conv1"
+  top: "conv2"
+  convolution_param {
+    num_output: 16
+    kernel_size: 3
+    stride: 2
+    pad: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv2__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv2"
+  top: "conv2"
+}
+layer {
+  name: "conv2__bn__scale"
+  type: "Scale"
+  bottom: "conv2"
+  top: "conv2"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv2__act__relu"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+}
+# ---------------------------------------------
+# convx = ResidualFactory_v1( convx,   16,   16,    16,   1,   'conv3', 'normal') # x56 -> x56
+layer {
+  name: "conv3_c1x1-a__conv"
+  type: "Convolution"
+  bottom: "conv2"
+  top: "conv3-a"
+  convolution_param {
+    num_output: 16
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv3_c1x1-a__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv3-a"
+  top: "conv3-a"
+}
+layer {
+  name: "conv3_c1x1-a__bn__scale"
+  type: "Scale"
+  bottom: "conv3-a"
+  top: "conv3-a"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv3_c1x1-a__act__relu"
+  type: "ReLU"
+  bottom: "conv3-a"
+  top: "conv3-a"
+}
+
+# -----
+
+layer {
+  name: "conv3_c3x3-b__conv"
+  type: "Convolution"
+  bottom: "conv3-a"
+  top: "conv3-b"
+  convolution_param {
+    num_output: 16
+    kernel_size: 3
+    pad: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv3_c3x3-b__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv3-b"
+  top: "conv3-b"
+}
+layer {
+  name: "conv3_c3x3-b__bn__scale"
+  type: "Scale"
+  bottom: "conv3-b"
+  top: "conv3-b"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv3_c3x3-b__act__relu"
+  type: "ReLU"
+  bottom: "conv3-b"
+  top: "conv3-b"
+}
+
+# -----
+
+layer {
+  name: "conv3_c1x1-c__conv"
+  type: "Convolution"
+  bottom: "conv3-b"
+  top: "conv3-c"
+  convolution_param {
+    num_output: 16
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv3_c1x1-c__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv3-c"
+  top: "conv3-c"
+}
+layer {
+  name: "conv3_c1x1-c__bn__scale"
+  type: "Scale"
+  bottom: "conv3-c"
+  top: "conv3-c"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv3-sum"
+  type: "Eltwise"
+  bottom: "conv2"
+  bottom: "conv3-c"
+  top: "conv3-sum"
+}
+
+layer {
+  name: "conv3_sum-act"
+  type: "ReLU"
+  bottom: "conv3-sum"
+  top: "conv3-sum"
+}
+
+
+
+# ---------------------------------------------
+# convx = ResidualFactory_v1( convx,  32,  32,  32,   1,   'conv4', 'down')   # x56 -> x28
+layer {
+  name: "conv4_c1x1-a__conv"
+  type: "Convolution"
+  bottom: "conv3-sum"
+  top: "conv4-a"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv4_c1x1-a__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv4-a"
+  top: "conv4-a"
+}
+layer {
+  name: "conv4_c1x1-a__bn__scale"
+  type: "Scale"
+  bottom: "conv4-a"
+  top: "conv4-a"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv4_c1x1-a__act__relu"
+  type: "ReLU"
+  bottom: "conv4-a"
+  top: "conv4-a"
+}
+
+# -----
+
+layer {
+  name: "conv4_c3x3-b__conv"
+  type: "Convolution"
+  bottom: "conv4-a"
+  top: "conv4-b"
+  convolution_param {
+    num_output: 32
+    kernel_size: 3
+    pad: 1
+    stride: 2
+    bias_term: false
+  }
+}
+layer {
+  name: "conv4_c3x3-b__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv4-b"
+  top: "conv4-b"
+}
+layer {
+  name: "conv4_c3x3-b__bn__scale"
+  type: "Scale"
+  bottom: "conv4-b"
+  top: "conv4-b"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv4_c3x3-b__act__relu"
+  type: "ReLU"
+  bottom: "conv4-b"
+  top: "conv4-b"
+}
+
+# -----
+
+layer {
+  name: "conv4_c1x1-c__conv"
+  type: "Convolution"
+  bottom: "conv4-b"
+  top: "conv4-c"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv4_c1x1-c__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv4-c"
+  top: "conv4-c"
+}
+layer {
+  name: "conv4_c1x1-c__bn__scale"
+  type: "Scale"
+  bottom: "conv4-c"
+  top: "conv4-c"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv4_c1x1-w(s/2)__conv"
+  type: "Convolution"
+  bottom: "conv3-sum"
+  top: "conv4-w"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 2
+    bias_term: false
+  }
+}
+layer {
+  name: "conv4_c1x1-w(s/2)__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv4-w"
+  top: "conv4-w"
+}
+layer {
+  name: "conv4_c1x1-w(s/2)__bn__scale"
+  type: "Scale"
+  bottom: "conv4-w"
+  top: "conv4-w"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv4-sum"
+  type: "Eltwise"
+  bottom: "conv4-w"
+  bottom: "conv4-c"
+  top: "conv4-sum"
+}
+
+layer {
+  name: "conv4_sum-act"
+  type: "ReLU"
+  bottom: "conv4-sum"
+  top: "conv4-sum"
+}
+
+
+
+# ---------------------------------------------
+# convx = ResidualFactory_v1( convx,  32,  32,   32,   1,   'conv5', 'normal') # x28 -> x28
+layer {
+  name: "conv5_c1x1-a__conv"
+  type: "Convolution"
+  bottom: "conv4-sum"
+  top: "conv5-a"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv5_c1x1-a__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv5-a"
+  top: "conv5-a"
+}
+layer {
+  name: "conv5_c1x1-a__bn__scale"
+  type: "Scale"
+  bottom: "conv5-a"
+  top: "conv5-a"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv5_c1x1-a__act__relu"
+  type: "ReLU"
+  bottom: "conv5-a"
+  top: "conv5-a"
+}
+
+# -----
+
+layer {
+  name: "conv5_c3x3-b__conv"
+  type: "Convolution"
+  bottom: "conv5-a"
+  top: "conv5-b"
+  convolution_param {
+    num_output: 32
+    kernel_size: 3
+    pad: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv5_c3x3-b__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv5-b"
+  top: "conv5-b"
+}
+layer {
+  name: "conv5_c3x3-b__bn__scale"
+  type: "Scale"
+  bottom: "conv5-b"
+  top: "conv5-b"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv5_c3x3-b__act__relu"
+  type: "ReLU"
+  bottom: "conv5-b"
+  top: "conv5-b"
+}
+
+# -----
+
+layer {
+  name: "conv5_c1x1-c__conv"
+  type: "Convolution"
+  bottom: "conv5-b"
+  top: "conv5-c"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv5_c1x1-c__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv5-c"
+  top: "conv5-c"
+}
+layer {
+  name: "conv5_c1x1-c__bn__scale"
+  type: "Scale"
+  bottom: "conv5-c"
+  top: "conv5-c"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv5-sum"
+  type: "Eltwise"
+  bottom: "conv4-sum"
+  bottom: "conv5-c"
+  top: "conv5-sum"
+}
+
+layer {
+  name: "conv5_sum-act"
+  type: "ReLU"
+  bottom: "conv5-sum"
+  top: "conv5-sum"
+}
+
+# ---------------------------------------------
+# convx = ResidualFactory_v1( convx,  32,  32,   32,   1,   'conv6', 'down')   # x28 -> x14
+layer {
+  name: "conv6_c1x1-a__conv"
+  type: "Convolution"
+  bottom: "conv5-sum"
+  top: "conv6-a"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv6_c1x1-a__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv6-a"
+  top: "conv6-a"
+}
+layer {
+  name: "conv6_c1x1-a__bn__scale"
+  type: "Scale"
+  bottom: "conv6-a"
+  top: "conv6-a"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv6_c1x1-a__act__relu"
+  type: "ReLU"
+  bottom: "conv6-a"
+  top: "conv6-a"
+}
+
+# -----
+
+layer {
+  name: "conv6_c3x3-b__conv"
+  type: "Convolution"
+  bottom: "conv6-a"
+  top: "conv6-b"
+  convolution_param {
+    num_output: 32
+    kernel_size: 3
+    pad: 1
+    stride: 2
+    bias_term: false
+  }
+}
+layer {
+  name: "conv6_c3x3-b__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv6-b"
+  top: "conv6-b"
+}
+layer {
+  name: "conv6_c3x3-b__bn__scale"
+  type: "Scale"
+  bottom: "conv6-b"
+  top: "conv6-b"
+  scale_param { bias_term: true }
+}
+layer {
+  name: "conv6_c3x3-b__act__relu"
+  type: "ReLU"
+  bottom: "conv6-b"
+  top: "conv6-b"
+}
+
+# -----
+
+layer {
+  name: "conv6_c1x1-c__conv"
+  type: "Convolution"
+  bottom: "conv6-b"
+  top: "conv6-c"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+    bias_term: false
+  }
+}
+layer {
+  name: "conv6_c1x1-c__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv6-c"
+  top: "conv6-c"
+}
+layer {
+  name: "conv6_c1x1-c__bn__scale"
+  type: "Scale"
+  bottom: "conv6-c"
+  top: "conv6-c"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv6_c1x1-w(s/2)__conv"
+  type: "Convolution"
+  bottom: "conv5-sum"
+  top: "conv6-w"
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 2
+    bias_term: false
+  }
+}
+layer {
+  name: "conv6_c1x1-w(s/2)__bn__bn"
+  type: "BatchNorm"
+  bottom: "conv6-w"
+  top: "conv6-w"
+}
+layer {
+  name: "conv6_c1x1-w(s/2)__bn__scale"
+  type: "Scale"
+  bottom: "conv6-w"
+  top: "conv6-w"
+  scale_param { bias_term: true }
+}
+
+# -----
+
+layer {
+  name: "conv6-sum"
+  type: "Eltwise"
+  bottom: "conv6-w"
+  bottom: "conv6-c"
+  top: "conv6-sum"
+}
+
+layer {
+  name: "conv6_sum-act"
+  type: "ReLU"
+  bottom: "conv6-sum"
+  top: "conv6-sum"
+}
+
+
+
+# ----------------------------------------
+# pool5     = mx.symbol.Pooling(data=before_pool, pool_type="avg", kernel=(28, 28), stride=(1,1), name="pool5")
+
+layer {
+  name: "pool5"
+  type: "Pooling"
+  bottom: "conv6-sum"
+  top: "pool5"
+  pooling_param {
+    pool: AVE
+    kernel_size: 14
+    stride: 1
+  }
+}
+
+# ----------------------------------------
+# fc6       = mx.symbol.FullyConnected(data=flat5, num_hidden=num_classes, name='fc')
+  
+layer {
+  name: "fc"
+  type: "InnerProduct"
+  bottom: "pool5"
+  top: "fc"
+  inner_product_param {
+    num_output: 1000
+  }
+}
+
+
