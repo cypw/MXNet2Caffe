@@ -39,8 +39,12 @@ for i_key,key_i in enumerate(all_keys):
     elif '_bias' in key_i:
       key_caffe = key_i.replace('_bias','')
       net.params[key_caffe][1].data.flat = arg_params[key_i].asnumpy().flat   
-    elif '_gamma' in key_i:
+    elif 'bn_gamma' in key_i:
       key_caffe = key_i.replace('bn_gamma','scale')
+      net.params[key_caffe][0].data.flat = arg_params[key_i].asnumpy().flat
+    elif '_gamma' in key_i:   # for prelu
+      key_caffe = key_i.replace('_gamma','')
+      assert (len(net.params[key_caffe]) == 1)
       net.params[key_caffe][0].data.flat = arg_params[key_i].asnumpy().flat
     elif '_beta' in key_i:
       key_caffe = key_i.replace('bn_beta','scale')
