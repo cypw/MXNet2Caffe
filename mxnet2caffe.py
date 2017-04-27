@@ -6,7 +6,7 @@ import caffe
 parser = argparse.ArgumentParser(description='Convert MXNet model to Caffe model')
 parser.add_argument('--mx-model',    type=str, default='model_mxnet/residual')
 parser.add_argument('--mx-epoch',    type=int, default=0)
-parser.add_argument('--cf-prototxt', type=str, default='prototxt/deploy.prototxt')
+parser.add_argument('--cf-prototxt', type=str, default='model_caffe/deploy.prototxt')
 parser.add_argument('--cf-model',    type=str, default='model_caffe/residual.caffemodel')
 args = parser.parse_args()
 
@@ -31,7 +31,7 @@ for i_key,key_i in enumerate(all_keys):
 
   try:    
     
-    if 'data' in key_i:
+    if 'data' is key_i:
       pass
     elif '_weight' in key_i:
       key_caffe = key_i.replace('_weight','')
@@ -39,15 +39,16 @@ for i_key,key_i in enumerate(all_keys):
     elif '_bias' in key_i:
       key_caffe = key_i.replace('_bias','')
       net.params[key_caffe][1].data.flat = arg_params[key_i].asnumpy().flat   
-    elif 'bn_gamma' in key_i:
-      key_caffe = key_i.replace('bn_gamma','scale')
+    elif '_gamma' in key_i:
+      key_caffe = key_i.replace('_gamma','_scale')
       net.params[key_caffe][0].data.flat = arg_params[key_i].asnumpy().flat
-    elif '_gamma' in key_i:   # for prelu
-      key_caffe = key_i.replace('_gamma','')
-      assert (len(net.params[key_caffe]) == 1)
-      net.params[key_caffe][0].data.flat = arg_params[key_i].asnumpy().flat
+    # TODO: support prelu
+    #elif '_gamma' in key_i:   # for prelu
+    #  key_caffe = key_i.replace('_gamma','')
+    #  assert (len(net.params[key_caffe]) == 1)
+    #  net.params[key_caffe][0].data.flat = arg_params[key_i].asnumpy().flat
     elif '_beta' in key_i:
-      key_caffe = key_i.replace('bn_beta','scale')
+      key_caffe = key_i.replace('_beta','_scale')
       net.params[key_caffe][1].data.flat = arg_params[key_i].asnumpy().flat    
     elif '_moving_mean' in key_i:
       key_caffe = key_i.replace('_moving_mean','')
