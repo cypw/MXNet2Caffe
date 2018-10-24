@@ -16,9 +16,9 @@ And then, using `python mxnet2caffe.py` to generate the corresponding `.caffemod
 
 ## TODO
 
-[1] Since their is not `Flaten` layer in caffe, you have to manually moidify the automatically generated `.prototxt`. In other words, you have to change the `bottom` of the layer just after the `Falatten` layer making it linking to the layer before the `Falatten` layer. Currently, this part has to be done manually.
+[1] Since there is no `Flatten` layer in caffe, you have to manually modify the automatically generated `.prototxt`. In other words, you have to change the `bottom` of the layer just after the `Flatten` layer making it linking to the layer before the `Flatten` layer. Currently, this part has to be done manually.
 
-[2] The converted model performances a little bit worse than the original MXNet model.
+[2] The converted model scores a little bit worse than the original MXNet model.
 
 [3] Code for automatically reversing the weight (and bias) of the first layer to support BGR input.
 
